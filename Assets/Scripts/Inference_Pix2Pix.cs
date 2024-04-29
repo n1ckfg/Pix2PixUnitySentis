@@ -8,7 +8,6 @@ using Unity.Barracuda;
 public class Inference_Pix2Pix : MonoBehaviour {
 
     public Camera cam;
-    public Transform followTarget;
     public Transform[] hideTarget;
     public bool camIsMain = true;
     public bool matchMainCamSettings = false;
@@ -22,9 +21,11 @@ public class Inference_Pix2Pix : MonoBehaviour {
     public bool flipInputY = true;
     public bool flipOutputX = true;
     public bool flipOutputY = false;
+    public bool processInGrayscale = false;
+    public bool continuousInteference = false;
 
     [HideInInspector] public RenderTexture inputRTex;
-    [HideInInspector] public RenderTexture infRTex;
+    [HideInInspector] RenderTexture infRTex;
     [HideInInspector] public RenderTexture outputRTex;
     
     private Model model;
@@ -42,9 +43,8 @@ public class Inference_Pix2Pix : MonoBehaviour {
     }
 
     private void Update() {
-        if (!camIsMain && followTarget != null) {
-            cam.transform.position = followTarget.position;
-            cam.transform.rotation = followTarget.rotation;
+        if (continuousInteference && ready) {
+            DoInference();
         }
     }
 
@@ -60,12 +60,10 @@ public class Inference_Pix2Pix : MonoBehaviour {
             for (int i=0; i<hideTarget.Length; i++) {
                 ChangeRenderLayer(hideTarget[i], LayerMask.NameToLayer("Hidden"), true);
             }
+            yield return new WaitForEndOfFrame();
         }
 
-        yield return new WaitForEndOfFrame();
-
         Screenshot(cam);
-
         if (infRTex != null) infRTex.Release();
         infRTex = new RenderTexture(inferenceResolution, inferenceResolution, 0, RenderTextureFormat.ARGB32);
         infRTex.enableRandomWrite = true;
@@ -85,7 +83,7 @@ public class Inference_Pix2Pix : MonoBehaviour {
             outputRTex = new RenderTexture(infRTex.width, infRTex.height, 0, RenderTextureFormat.ARGB32);
             outputRTex.enableRandomWrite = true;
             outputRTex.Create();
-            SetTexFromFloats(outputFloats);
+            SetTexFromFloats(outputFloats, processInGrayscale);
             targetMtl.SetTexture(targetMtlProp, outputRTex);
         }
         
@@ -94,6 +92,8 @@ public class Inference_Pix2Pix : MonoBehaviour {
                 ChangeRenderLayer(hideTarget[i], LayerMask.NameToLayer("Default"), true);
             }
         }
+
+        yield return null;
 
         ready = true;
     }
@@ -110,8 +110,9 @@ public class Inference_Pix2Pix : MonoBehaviour {
         outputRTex = null;
     }
 
-    private void SetTexFromFloats(float[] floatArray) {
+    private void SetTexFromFloats(float[] floatArray, bool isGrayscale) {
         int numPixels = infRTex.width * infRTex.height;
+        Debug.Log("Floats: " + floatArray.Length + ", pixels: " + numPixels);
 
         if (floatArray.Length < numPixels) {
             Debug.LogError("Float array size is smaller than RenderTexture size.");
@@ -121,9 +122,17 @@ public class Inference_Pix2Pix : MonoBehaviour {
         Texture2D tempTex = new Texture2D(infRTex.width, infRTex.height, TextureFormat.ARGB32, false);
 
         Color[] colors = new Color[numPixels];
-        for (int i = 0; i < colors.Length; i++) {
-            colors[i] = new Color(floatArray[i], floatArray[i], floatArray[i], 1f);
+        if (isGrayscale) {
+            for (int i = 0; i < floatArray.Length; i++) {
+                colors[i] = new Color(floatArray[i], floatArray[i], floatArray[i], 1f);
+            }
+        } else {
+            for (int i = 0; i < floatArray.Length; i+=3) {
+                int index = i / 3;
+                colors[index] = new Color(floatArray[i], floatArray[i+1], floatArray[i+2], 1f);
+            }
         }
+
         tempTex.SetPixels(colors);
         tempTex.Apply();
 
