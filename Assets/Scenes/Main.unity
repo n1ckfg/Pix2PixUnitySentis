@@ -316,6 +316,7 @@ GameObject:
   - component: {fileID: 293207412}
   - component: {fileID: 293207411}
   - component: {fileID: 293207410}
+  - component: {fileID: 293207413}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -370,7 +371,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 55
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -397,6 +398,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 4.017, z: 0}
+--- !u!114 &293207413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 293207409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff6ca6f8907a8438c898100215a26954, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  useKeyboard: 1
+  useYAxis: 1
+  yAxisName: Vertical2
+  walkSpeed: 10
+  runSpeed: 100
+  accel: 0.01
+  homePoint: {fileID: 0}
+  useMouse: 1
+  showCursor: 0
+  useButton: 1
+  axes: 0
+  sensitivityX: 2
+  sensitivityY: 2
+  mousePos: {x: 0, y: 0, z: 0}
+  clicked: 0
+  isDrawing: 0
+  useRaycaster: 1
+  followMouse: 1
+  isLooking: 0
+  isLookingAt: 
+  lastHitPos: {x: 1, y: 1, z: 1}
+  useCollisions: 0
 --- !u!1 &323050264
 GameObject:
   m_ObjectHideFlags: 0
@@ -960,10 +995,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cam: {fileID: 293207411}
   followTarget: {fileID: 0}
+  hideTarget:
+  - {fileID: 2066572577}
+  - {fileID: 2066572577}
   camIsMain: 1
   matchMainCamSettings: 0
-  nnModel: {fileID: 5022602860645237092, guid: 6e64b96add6224f63b4bb2fa07dfa2c2, type: 3}
-  inferenceResolution: 512
+  nnModel: {fileID: 5022602860645237092, guid: 298f2268716f54df6872ea6c3449f134, type: 3}
+  inferenceResolution: 256
   targetMtl: {fileID: 2100000, guid: c4574e9f686791d43825b47d2e4ac1c9, type: 2}
   targetMtlProp: _MainTex
   displayOutputTexture: 1
@@ -1268,10 +1306,10 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2066572577}
+  - {fileID: 2113623346}
   - {fileID: 1563819215}
   - {fileID: 1145216853}
   - {fileID: 1567689811}
-  - {fileID: 2113623346}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1563819211

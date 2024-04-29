@@ -5,10 +5,11 @@ using System.Linq;
 using UnityEngine;
 using Unity.Barracuda;
 
-public class Inference_informative : MonoBehaviour {
+public class Inference_Pix2Pix : MonoBehaviour {
 
     public Camera cam;
     public Transform followTarget;
+    public Transform[] hideTarget;
     public bool camIsMain = true;
     public bool matchMainCamSettings = false;
     public NNModel nnModel;
@@ -17,11 +18,6 @@ public class Inference_informative : MonoBehaviour {
     public string targetMtlProp = "_MainTex";
     public bool displayOutputTexture = true;
     public bool hideRenderLayer = true;
-    //public LightningArtist latk;
-    public float skeleton_threshold = 0.5f;
-    public int trace_c = 10;
-    public int minPoints = 2;
-    public float distanceThreshold = 1f;
     public bool flipInputX = false;
     public bool flipInputY = true;
     public bool flipOutputX = true;
@@ -34,7 +30,6 @@ public class Inference_informative : MonoBehaviour {
     private Model model;
     private IWorker worker;
     private bool ready = true;
-    private float thresholdBoolOutput;
 
     private void Start() {
         if (!camIsMain) {
@@ -44,7 +39,6 @@ public class Inference_informative : MonoBehaviour {
         model = ModelLoader.Load(nnModel);
         //worker = WorkerFactory.CreateWorker(model, WorkerFactory.Device.GPU);
         worker = WorkerFactory.CreateWorker(WorkerFactory.Type.Auto, model);
-        thresholdBoolOutput = Mathf.Abs(1f - Mathf.Clamp(skeleton_threshold, 0f, 1f));
     }
 
     private void Update() {
@@ -62,7 +56,11 @@ public class Inference_informative : MonoBehaviour {
 
     private IEnumerator DoInferenceCR() {
         ready = false;
-        //if (hideRenderLayer) ChangeRenderLayer(latk.transform, LayerMask.NameToLayer("Hidden"), true);
+        if (hideRenderLayer) {
+            for (int i=0; i<hideTarget.Length; i++) {
+                ChangeRenderLayer(hideTarget[i], LayerMask.NameToLayer("Hidden"), true);
+            }
+        }
 
         yield return new WaitForEndOfFrame();
 
@@ -91,55 +89,12 @@ public class Inference_informative : MonoBehaviour {
             targetMtl.SetTexture(targetMtlProp, outputRTex);
         }
         
-        // Convert output to polylines
-        /*
-        bool[] outputBools = SetBoolsFromFloats(outputFloats);
-        TraceSkeleton.thinningZS(outputBools, infRTex.width, infRTex.height);
-        List<List<int[]>> traceOutput = TraceSkeleton.traceSkeleton(outputBools, infRTex.width, infRTex.height, trace_c);
-
-        float w = (float) Screen.width;
-        float h = (float) Screen.height;
-
-        List<List<Vector3>> originalStrokes = new List<List<Vector3>>();
-        List<List<Vector3>> separatedStrokes = new List<List<Vector3>>();
-
-        //Debug.Log("Found " + traceOutput.Count + " lines.");
-        for (int i = 0; i < traceOutput.Count; i++) {
-            List<Vector3> points = new List<Vector3>();
-            //Debug.Log("Found " + traceOutput[i].Count + " points in line " + i + ".");
-
-            for (int j = 0; j < traceOutput[i].Count; j++) {
-                float x = ((float) traceOutput[i][j][0] / (float) infRTex.width) * (float) Screen.width;
-                float y = ((float) traceOutput[i][j][1] / (float) infRTex.height) * (float) Screen.height;
-
-                if (flipInputX) x = Screen.width - x;
-                if (flipInputY) y = Screen.height - y;
-
-                Vector2 point2D = new Vector2(x, y);
-
-                Vector3 point3D = FindWorldSpaceCoords(point2D);
-                if (point3D != Vector3.zero) points.Add(point3D);
-            }
-
-            if (points.Count >= minPoints) {
-                originalStrokes.Add(points);
+        if (hideRenderLayer) {
+            for (int i=0; i<hideTarget.Length; i++) {
+                ChangeRenderLayer(hideTarget[i], LayerMask.NameToLayer("Default"), true);
             }
         }
 
-        for (int i = 0; i < originalStrokes.Count; i++) {
-            List<List<Vector3>> separatedTempList = SeparatePointsByDistance(originalStrokes[i], distanceThreshold);
-
-            for (int j = 0; j < separatedTempList.Count; j++) {
-                separatedStrokes.Add(separatedTempList[j]);
-            }
-        }
-
-        for (int i=0; i<separatedStrokes.Count; i++) {
-            latk.inputInstantiateStroke(latk.mainColor, separatedStrokes[i]);
-        }
-
-        if (hideRenderLayer) ChangeRenderLayer(latk.transform, LayerMask.NameToLayer("Default"), true);
-        */
         ready = true;
     }
 
@@ -183,15 +138,6 @@ public class Inference_informative : MonoBehaviour {
         Debug.Log("Floats: " + floatArray.Length + ", pixels: " + numPixels + "\n" +
                   "tempTex: " + tempTex.width + ", " + tempTex.height + "\n" + 
                   "outputRTex: " + outputRTex.width + ", " + outputRTex.height);
-    }
-
-    private bool[] SetBoolsFromFloats(float[] floatArray) {
-        int numPixels = infRTex.width * infRTex.height;
-        bool[] returns = new bool[numPixels];
-        for (int i=0; i<returns.Length; i++) {
-            returns[i] = floatArray[i] < thresholdBoolOutput ? true : false;
-        }
-        return returns;
     }
 
     private void Screenshot(Camera cam) {
