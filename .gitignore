@@ -17,3 +17,5 @@ Desktop.ini
 /Temp
 
 /Assets/StreamingAssets/*.pict
+/Assets/StreamingAssets/*.onnx
+/Assets/ONNX/*
