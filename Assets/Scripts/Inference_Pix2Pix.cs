@@ -23,6 +23,7 @@ public class Inference_Pix2Pix : MonoBehaviour {
     public bool flipOutputY = false;
     public bool processInGrayscale = false;
     public bool continuousInteference = false;
+    public float blendVal = 0.5f;
 
     [HideInInspector] public RenderTexture inputRTex;
     [HideInInspector] RenderTexture infRTex;
@@ -32,6 +33,9 @@ public class Inference_Pix2Pix : MonoBehaviour {
     private IWorker worker;
     private bool ready = true;
 
+    private Color[] colors;
+    private int numPixels;
+
     private void Start() {
         if (!camIsMain) {
             cam.enabled = false;
@@ -40,6 +44,9 @@ public class Inference_Pix2Pix : MonoBehaviour {
         model = ModelLoader.Load(nnModel);
         //worker = WorkerFactory.CreateWorker(model, WorkerFactory.Device.GPU);
         worker = WorkerFactory.CreateWorker(WorkerFactory.Type.Auto, model);
+
+        numPixels = inferenceResolution * inferenceResolution;
+        colors = new Color[numPixels];
     }
 
     private void Update() {
@@ -111,7 +118,6 @@ public class Inference_Pix2Pix : MonoBehaviour {
     }
 
     private void SetTexFromFloats(float[] floatArray, bool isGrayscale) {
-        int numPixels = infRTex.width * infRTex.height;
         Debug.Log("Floats: " + floatArray.Length + ", pixels: " + numPixels);
 
         if (floatArray.Length < numPixels) {
@@ -121,15 +127,27 @@ public class Inference_Pix2Pix : MonoBehaviour {
 
         Texture2D tempTex = new Texture2D(infRTex.width, infRTex.height, TextureFormat.ARGB32, false);
 
-        Color[] colors = new Color[numPixels];
-        if (isGrayscale) {
-            for (int i = 0; i < floatArray.Length; i++) {
-                colors[i] = new Color(floatArray[i], floatArray[i], floatArray[i], 1f);
+        if (blendVal > 0f && blendVal < 1f) {
+            if (isGrayscale) {
+                for (int i = 0; i < floatArray.Length; i++) {
+                    colors[i] = Color.Lerp(colors[i], new Color(floatArray[i], floatArray[i], floatArray[i], blendVal), blendVal);
+                }
+            } else {
+                for (int i = 0; i < floatArray.Length; i+=3) {
+                    int index = i / 3;
+                    colors[index] = Color.Lerp(colors[index], new Color(floatArray[i], floatArray[i+1], floatArray[i+2], blendVal), blendVal);
+                }
             }
         } else {
-            for (int i = 0; i < floatArray.Length; i+=3) {
-                int index = i / 3;
-                colors[index] = new Color(floatArray[i], floatArray[i+1], floatArray[i+2], 1f);
+            if (isGrayscale) {
+                for (int i = 0; i < floatArray.Length; i++) {
+                    colors[i] = new Color(floatArray[i], floatArray[i], floatArray[i]);
+                }
+            } else {
+                for (int i = 0; i < floatArray.Length; i+=3) {
+                    int index = i / 3;
+                    colors[index] = new Color(floatArray[i], floatArray[i+1], floatArray[i+2]);
+                }
             }
         }
 

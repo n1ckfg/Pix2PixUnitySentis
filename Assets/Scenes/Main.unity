@@ -1012,6 +1012,7 @@ MonoBehaviour:
   flipOutputY: 0
   processInGrayscale: 0
   continuousInteference: 1
+  blendVal: 0.5
   inputRTex: {fileID: 0}
   outputRTex: {fileID: 0}
 --- !u!114 &842067010
@@ -1504,7 +1505,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 55
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 8400000, guid: 11135a9b66cb3477392e29a6120bbac5, type: 2}
+  m_TargetTexture: {fileID: 8400000, guid: 7a07e247479da44b2a7e69f6a78537fb, type: 2}
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
