@@ -1011,8 +1011,8 @@ MonoBehaviour:
   flipOutputX: 1
   flipOutputY: 0
   processInGrayscale: 0
-  continuousInteference: 1
   blendVal: 0.5
+  continuousInference: 1
   inputRTex: {fileID: 0}
   outputRTex: {fileID: 0}
 --- !u!114 &842067010
