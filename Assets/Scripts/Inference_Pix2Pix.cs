@@ -22,8 +22,8 @@ public class Inference_Pix2Pix : MonoBehaviour {
     public bool flipOutputX = true;
     public bool flipOutputY = false;
     public bool processInGrayscale = false;
-    public bool continuousInteference = false;
     public float blendVal = 0.5f;
+    public bool continuousInference = false;
 
     [HideInInspector] public RenderTexture inputRTex;
     [HideInInspector] RenderTexture infRTex;
@@ -50,7 +50,7 @@ public class Inference_Pix2Pix : MonoBehaviour {
     }
 
     private void Update() {
-        if (continuousInteference && ready) {
+        if (continuousInference && ready) {
             DoInference();
         }
     }
